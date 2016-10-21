@@ -13,7 +13,7 @@ do only run in trusted environments (as it doesn't support authentication).
 ```
 GET /ping                    Can be used for basic health checking.
 GET /version                 Responds with the micro service version.
-GET /v1/instances            Lists all EC2 instances in its AWS region
+GET /v1/instances            Lists all EC2 instance in its AWS region
 POST /v1/instances/create    Spawns a new EC2 instances with non-empty 
                              query arguments for username and password.
 ```
