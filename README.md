@@ -27,8 +27,19 @@ go get github.com/christianparpart/awsfund
 awsfund -h
 ```
 
-Otherwise, I'll provide you with the binary ;-)
-Please check the Github releases page.
+### Running via Docker
+
+Simply build the docker image, such as:
+```!sh
+docker build -t awsfund .
+```
+
+Then you can run it lust like a binary.
+```!sh
+docker run --rm awsfund --help
+```
+
+Just pass the command line interface arguments at the end of the `docker run` command.
 
 ### Example
 Please make sure to use real credentials and security values.
