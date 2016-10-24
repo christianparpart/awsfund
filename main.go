@@ -38,13 +38,13 @@ import (
 const appVersion = "0.1.0"
 
 var (
-	ErrUserOrPasswordEmpty = errors.New("Username or password empty.")
+	errUserOrPasswordEmpty = errors.New("Username or password empty.")
 )
 
 type awsFund struct {
 	httpPort             int
-	awsImageId           string
-	awsAccessKeyId       string
+	awsImageID           string
+	awsAccessKeyID       string
 	awsSecretAccessKey   string
 	awsSecurityGroupName string
 	awsKeyName           string
@@ -54,8 +54,8 @@ type awsFund struct {
 }
 
 func (fund *awsFund) initialize() {
-	if fund.awsAccessKeyId != "" {
-		os.Setenv("AWS_ACCESS_KEY_ID", fund.awsAccessKeyId)
+	if fund.awsAccessKeyID != "" {
+		os.Setenv("AWS_ACCESS_KEY_ID", fund.awsAccessKeyID)
 	}
 
 	if fund.awsSecretAccessKey != "" {
@@ -91,7 +91,7 @@ func (fund *awsFund) Run() {
 
 func (fund *awsFund) awsCreateInstance(username, password string) (*ec2.Reservation, error) {
 	if username == "" || password == "" {
-		return nil, ErrUserOrPasswordEmpty
+		return nil, errUserOrPasswordEmpty
 	}
 
 	// create new local user and whitelist that user for SSH password auth
@@ -113,7 +113,7 @@ func (fund *awsFund) awsCreateInstance(username, password string) (*ec2.Reservat
 	awsUserData = base64.StdEncoding.EncodeToString([]byte(awsUserData))
 
 	params := &ec2.RunInstancesInput{
-		ImageId:                           aws.String(fund.awsImageId),
+		ImageId:                           aws.String(fund.awsImageID),
 		MaxCount:                          aws.Int64(1),
 		MinCount:                          aws.Int64(1),
 		KeyName:                           aws.String(fund.awsKeyName),
@@ -138,7 +138,7 @@ func (fund *awsFund) awsCreateInstance(username, password string) (*ec2.Reservat
 	return reservation, nil
 }
 
-func (fund *awsFund) awsInstanceById(id *string) (*ec2.Instance, error) {
+func (fund *awsFund) awsInstanceByID(id *string) (*ec2.Instance, error) {
 	input := &ec2.DescribeInstancesInput{
 		Filters: []*ec2.Filter{
 			&ec2.Filter{
@@ -227,7 +227,7 @@ func (fund *awsFund) v1CreateInstance(w http.ResponseWriter, r *http.Request) {
 	password := r.URL.Query().Get("password")
 	reservation, err := fund.awsCreateInstance(username, password)
 	if err != nil {
-		if err == ErrUserOrPasswordEmpty {
+		if err == errUserOrPasswordEmpty {
 			w.WriteHeader(http.StatusBadRequest)
 		} else {
 			w.WriteHeader(http.StatusInternalServerError)
@@ -238,7 +238,7 @@ func (fund *awsFund) v1CreateInstance(w http.ResponseWriter, r *http.Request) {
 
 	fund.awsWaitForInstanceToRun(reservation.Instances[0].InstanceId)
 
-	i, err := fund.awsInstanceById(reservation.Instances[0].InstanceId)
+	i, err := fund.awsInstanceByID(reservation.Instances[0].InstanceId)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		fmt.Fprintf(w, "%v\n", err)
@@ -264,8 +264,8 @@ func (fund *awsFund) v1CreateInstance(w http.ResponseWriter, r *http.Request) {
 func main() {
 	fund := awsFund{}
 
-	flag.StringVar(&fund.awsAccessKeyId, "aws-access-key-id", "", "AWS access key ID")
-	flag.StringVar(&fund.awsImageId, "aws-image-id", "ami-26c43149", "AWS AMI image ID")
+	flag.StringVar(&fund.awsAccessKeyID, "aws-access-key-id", "", "AWS access key ID")
+	flag.StringVar(&fund.awsImageID, "aws-image-id", "ami-26c43149", "AWS AMI image ID")
 	flag.StringVar(&fund.awsSecretAccessKey, "aws-secret-access-key", "", "AWS secret access key")
 	flag.StringVar(&fund.awsSecurityGroupName, "aws-sg-name", "default", "AWS security group")
 	flag.StringVar(&fund.awsKeyName, "aws-key-name", "", "AWS key name")
